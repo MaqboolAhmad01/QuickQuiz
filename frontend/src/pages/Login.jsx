@@ -1,5 +1,6 @@
 import logo from "../assets/logo.png"; // adjust path based on your folder
 import React, { useState } from "react";
+import Logo from "../components/logo/Logo"; 
 
 import "./login.css";
 
@@ -46,9 +47,7 @@ const Login = () => {
   return (
     <div>
       {/* Logo on top-left */}
-      <div className="logo-container">
-        <img src={logo} alt="App Logo" className="logo" />
-      </div>
+      <Logo/>
 
       <div className="login-container">
         {/* Right side card */}

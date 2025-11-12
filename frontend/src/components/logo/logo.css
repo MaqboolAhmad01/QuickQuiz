@@ -1,0 +1,14 @@
+
+.logo {
+    height: 205px;
+    /* good size for corner */
+    width: auto;
+    /* keep proportions */
+    display: block;
+}
+
+.logo-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

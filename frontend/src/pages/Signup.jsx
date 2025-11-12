@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Signup.css";
-import logo from "../assets/logo.png"; // adjust path based on your folder
 
+import Logo from "../components/logo/Logo"; 
 
 // api call function
 const signupUser = async (formData) => {
@@ -82,9 +82,7 @@ const Signup = () => {
   return (
     <div>
       {/* Logo on top-left */}
-      <div className="logo-container">
-        <img src={logo} alt="App Logo" className="logo" />
-      </div>
+     <Logo/>
   
       {/* Signup content */}
       <div className="signup-container">
@@ -162,6 +160,9 @@ const Signup = () => {
               Sign Up
             </button>
           </form>
+          <div className="login-link">
+            Already have an account? <a href="/login">Login</a>
+          </div>
         </div>
       </div>
     </div>
