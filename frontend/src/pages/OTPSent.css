@@ -25,22 +25,31 @@
 
 
 
-  .otp-sent-card .otp-submit-button {
-    background:#a01a87  ;
+.otp-sent-card .otp-submit-button {
+    background: #a01a87;
     border-radius: 10px;
     color: white;
-    width:30%;
-    
+    width: 30%;
+
     padding: 8px 10px;
     /* font-size: 20px;   */
-    display: block;      /* make it a block element */
-    margin: 0 auto;  }
-  
-    .otp-sent-card .otp-submit-button:hover {
-    background:  #5a164d   ;
-  }
-  .resend-otp-link {
+    display: block;
+    /* make it a block element */
+    margin: 0 auto;
+}
+
+.otp-sent-card .otp-submit-button:hover {
+    background: #5a164d;
+}
+
+.resend-otp-link {
     text-align: center;
     margin-top: 15px;
     font-size: 1rem;
-    color: #333;}
+    color: #333;
+}
+
+.resend-otp-link a {
+
+    color: #a01a87;
+}
