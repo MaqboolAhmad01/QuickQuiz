@@ -10,6 +10,7 @@ import React from 'react'
 import Quiz from './components/Quiz/quiz'
 function App() {
   return (
+    
     <Router>
       <Routes>
         <Route path="/signup" element={<Signup/>} />

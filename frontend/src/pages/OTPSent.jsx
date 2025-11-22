@@ -1,20 +1,35 @@
 import React, { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { apiFetch } from "../api/apiClient";
+
 import "./OTPSent.css";
 import Logo from "../components/logo/Logo";
 
 const validateOTP = (value) => {
-    return /^\d{6}$/.test(value);  // only digits AND exactly 6 digits
+    const resp = apiFetch("/auth/verify-otp/", {
+        otp: e.target.otp.value
+    })
+    if (resp.ok) {
+        return true;
+    } else {
+        return false;
+    }
 };
 
 const OTPSent = () => {
-    const [error, setError] = useState("");
     const handleSubmit = (e) => {
         e.preventDefault();
-        setError(""); // clear previous error
         
         if (!validateOTP(e.target.otp.value)) {
-            setError("OTP must be exactly 6 digits.");
+            toast.error("Invalid OTP!");
             return;
+        }
+        else {
+            toast.success("OTP Verified.");
+           
+            setTimeout(() => {
+                window.location.href = "/quiz";
+            }, 1000);
         }
 
     };
@@ -22,6 +37,7 @@ const OTPSent = () => {
     return (
         <div>
             <Logo />
+            <Toaster  />
             <div className="otp-sent-container">
 
                 <div className="otp-sent-card">
@@ -30,13 +46,12 @@ const OTPSent = () => {
                         <div className="mb-3">
                             <input
                                 type="text"
-                                name="otp"
+                                name="otp"  
                                 placeholder="Enter OTP here"
                                 className="form-control"
                                 required
                             />
                         </div>
-                        {error && <p style={{ color: "red", marginTop: "5px" }}>{error}</p>}
 
                         <button type="submit" className="otp-submit-button">Verify OTP</button>
                         <div className="resend-otp-link">

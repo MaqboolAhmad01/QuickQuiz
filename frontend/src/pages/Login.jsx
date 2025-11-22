@@ -1,6 +1,7 @@
 import logo from "../assets/logo.png"; // adjust path based on your folder
 import React, { useState } from "react";
 import Logo from "../components/logo/Logo"; 
+import { useNavigate } from "react-router-dom";
 
 import "./login.css";
 
@@ -15,7 +16,9 @@ const loginUser = async (formData) => {
   
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || "Login failed");
+        console.log("Error response:", err);
+
+        throw new Error(err.detail);
       }
   
       return await response.json(); // return success data
@@ -30,16 +33,18 @@ const Login = () => {
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const data = await loginUser(form);
-      console.log("Login success:", data);
-      alert("Logged in successfully!");
+      const resp = await loginUser(form);
+      if (resp.ok){
+        alert("Logged in successfully!");
+        
+      navigate('/quiz')      }
     } catch (err) {
-      console.error("Signup failed:", err.message);
+      console.error("Login failed:", err.message);
       alert("Error: " + err.message);
     }
   };
@@ -62,7 +67,7 @@ const Login = () => {
                 name="email"
                 placeholder="Email"
                 value={form.email}
-                onChange={setForm}
+                onChange={(e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))}
                 className="form-control"
                 required
               />
@@ -73,6 +78,7 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
+                onChange={(e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))}
                 placeholder="Password"
                 value={form.password}
                 className="form-control"

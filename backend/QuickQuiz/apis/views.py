@@ -62,6 +62,37 @@ class OTPRetryView(generics.CreateAPIView):
             )
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code != 200:
+            print(f"Token data: {response.data}")  # Debugging line
+            return Response(response.data, status=response.status_code)
+        data = response.data
+
+        # Set HttpOnly cookies
+        response.set_cookie(
+            key="access_token",
+            value=data["access"],
+            httponly=True,
+            secure=True,
+            samesite="Strict"
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=data["refresh"],
+            httponly=True,
+            secure=True,
+            samesite="Strict"
+        )
+
+        # Remove tokens from the response body
+        del response.data["access"]
+        del response.data["refresh"]
+
+        return response
 
 
 class SignupView(generics.CreateAPIView):
@@ -70,13 +101,19 @@ class SignupView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response(
-            {
-                "message": "User created successfully",
-                "email": user.email,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
+
+            return Response(
+                {
+                    "message": "User created successfully",
+                    "email": user.email,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )

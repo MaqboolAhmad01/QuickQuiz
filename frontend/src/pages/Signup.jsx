@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./Signup.css";
 
 import Logo from "../components/logo/Logo"; 
+import { useNavigate } from "react-router-dom";
+
 
 // api call function
 const signupUser = async (formData) => {
@@ -14,6 +16,7 @@ const signupUser = async (formData) => {
 
     if (!response.ok) {
       const err = await response.json();
+      console.log("Error response:", err);
       throw new Error(err.message || "Signup failed");
     }
 
@@ -33,6 +36,7 @@ const Signup = () => {
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
 
   const [error, setError] = useState("");
@@ -71,7 +75,7 @@ const Signup = () => {
     try {
       const data = await signupUser(form);
       console.log("Signup success:", data);
-      alert("Account created successfully!");
+      navigate('/otp-sent');
     } catch (err) {
       console.error("Signup failed:", err.message);
       alert("Error: " + err.message);
