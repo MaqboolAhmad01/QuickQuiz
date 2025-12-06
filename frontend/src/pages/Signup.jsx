@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import "./Signup.css";
+import { FaSpinner } from 'react-icons/fa';
 
-import Logo from "../components/logo/Logo"; 
+import Logo from "../components/logo/Logo";
 import { useNavigate } from "react-router-dom";
 
 
 // api call function
 const signupUser = async (formData) => {
-  try {
     const response = await fetch("http://localhost:8000/auth/signup/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,10 +21,8 @@ const signupUser = async (formData) => {
     }
 
     return await response.json(); // return success data
-  } catch (error) {
-    throw error; // rethrow so caller can handle it
-  }
-};
+  } 
+;
 
 
 
@@ -40,6 +38,7 @@ const Signup = () => {
 
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Password validation function
   const validatePassword = (password) => {
@@ -64,8 +63,10 @@ const Signup = () => {
     }
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     if (!validatePassword(form.password)) {
       setError(
         "Password must be at least 8 chars, include upper, lower, number & special character."
@@ -75,30 +76,34 @@ const Signup = () => {
     try {
       const data = await signupUser(form);
       console.log("Signup success:", data);
-      navigate('/otp-sent');
+      localStorage.setItem("otp_email", form.email);
+
+      navigate('/otp-sent', { state: { email: form.email } });
     } catch (err) {
       console.error("Signup failed:", err.message);
       alert("Error: " + err.message);
-    }
+      setLoading(false);
+
+    } 
   };
 
 
   return (
     <div>
       {/* Logo on top-left */}
-     <Logo/>
-  
+      <Logo />
+
       {/* Signup content */}
       <div className="signup-container">
         {/* Left side text */}
         <div className="signup-text">
           <h1>Let's Evaluate your Knowledge</h1>
           <p>
-            Create your account today 
+            Create your account today
             and start your journey with us.
           </p>
         </div>
-  
+
         {/* Right side card */}
         <div className="signup-card">
           <h2 className="signup-title">Sign Up</h2>
@@ -115,7 +120,7 @@ const Signup = () => {
                 required
               />
             </div>
-  
+
             {/* Last Name */}
             <div className="mb-3">
               <input
@@ -128,7 +133,7 @@ const Signup = () => {
                 required
               />
             </div>
-  
+
             {/* Email */}
             <div className="mb-3">
               <input
@@ -141,7 +146,7 @@ const Signup = () => {
                 required
               />
             </div>
-  
+
             {/* Password */}
             <div className="mb-3 position-relative">
               <input
@@ -159,10 +164,16 @@ const Signup = () => {
               ></i>
             </div>
             {error && <small style={{ color: "red" }}>{error}</small>}
-  
-            <button type="submit" className="btn-signup">
-              Sign Up
-            </button>
+
+              {loading ? (
+                <div className="spinner-wrapper">
+                  <FaSpinner className="spinner" />
+                </div>
+              ) : (
+                <button type="submit" className="btn-signup" onSubmit={handleSubmit}>
+                  Let's go
+                </button>
+              )}
           </form>
           <div className="login-link">
             Already have an account? <a href="/login">Login</a>
@@ -171,5 +182,5 @@ const Signup = () => {
       </div>
     </div>
   );
-}  
+}
 export default Signup;

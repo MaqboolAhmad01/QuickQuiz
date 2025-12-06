@@ -106,3 +106,20 @@
       .login-link a {
         color: #a01a87 ;
       }
+      .spinner {
+        animation: spin 1s linear infinite;
+        font-size: 1.2rem;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .spinner-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px; /* match button height for smooth swap */
+      }
+      
