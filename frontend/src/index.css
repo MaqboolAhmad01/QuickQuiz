@@ -1,8 +1,32 @@
-/* *{
-  margin: 0;
-  padding:0;
-} */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-body {
-  background: linear-gradient(to right, rgb(106, 27, 91), rgb(46, 186, 159));
+
+.logo-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.logo {
+  height: 205px;
+  /* good size for corner */
+  width: auto;
+  /* keep proportions */
+  display: block;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  background: linear-gradient(
+    to right,
+    rgb(106, 27, 91),
+    rgb(46, 186, 159)
+  );
 }

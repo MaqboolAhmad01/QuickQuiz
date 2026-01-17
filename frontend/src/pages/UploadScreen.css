@@ -1,0 +1,93 @@
+/* Page wrapper */
+.upload-page {
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Dark overlay behind dialog */
+.upload-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* z-index: 10000; */
+
+}
+
+/* Upload dialog – styled like login-card */
+.upload-dialog {
+    width: 420px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+    padding: 40px 30px;
+    backdrop-filter: blur(6px);
+
+    text-align: center;
+}
+
+/* Title */
+.upload-dialog h3 {
+    font-weight: bold;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    /* color: #222; */
+}
+
+/* File input */
+.upload-dialog input[type="file"] {
+    display: block;
+    margin: 0 auto 15px auto;
+    font-size: 16px;
+}
+
+/* Info text */
+.upload-dialog p {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+/* Upload button (optional) */
+.upload-dialog .btn-upload {
+    background: #a01a87;
+    border-radius: 20px;
+    color: white;
+    width: 40%;
+    padding: 8px 10px;
+    font-size: 18px;
+    display: block;
+    margin: 20px auto 0;
+    border: none;
+}
+
+.upload-dialog .btn-upload:hover {
+    background: #5a164d;
+}
+
+.spinner-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ddd;
+    border-top: 5px solid #a01a87;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  

@@ -1,4 +1,3 @@
-import logo from "../assets/logo.png"; // adjust path based on your folder
 import React, { useState } from "react";
 import Logo from "../components/logo/Logo"; 
 import { useNavigate } from "react-router-dom";
@@ -7,10 +6,11 @@ import "./login.css";
 
 
 const loginUser = async (formData) => {
-    try {
       const response = await fetch("http://localhost:8000/auth/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // credentials: "include", // include cookies in the request
+
         body: JSON.stringify(formData),
       });
   
@@ -20,11 +20,14 @@ const loginUser = async (formData) => {
 
         throw new Error(err.detail);
       }
-  
-      return await response.json(); // return success data
-    } catch (error) {
-      throw error; // rethrow so caller can handle it
-    }
+
+      const data = await response.json();
+
+      if (data.access) {
+        localStorage.setItem("access_token", data.access);
+      }
+      return data; // return success data
+    
   };
 
 const Login = () => {
@@ -39,10 +42,10 @@ const Login = () => {
 
     try {
       const resp = await loginUser(form);
-      if (resp.ok){
-        alert("Logged in successfully!");
+      console.log("Login successful:------", resp);
+      alert("Logged in successfully!");
         
-      navigate('/quiz')      }
+      navigate('/upload');
     } catch (err) {
       console.error("Login failed:", err.message);
       alert("Error: " + err.message);

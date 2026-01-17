@@ -1,12 +1,20 @@
-from .models import User
+from .models import UploadedFile, User
 from .serializers import UserSignupSerializer
-from .utils import verify_otp
+from .utils import run_llm, verify_otp,load_pdf_file,chunk_document
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer, OTPVerificationSerializer
 from .utils import send_otp
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+
+)
+from drf_yasg.utils import swagger_auto_schema
+from django.shortcuts import get_object_or_404
 
 
 class OtpVerificationView(generics.CreateAPIView):
@@ -60,6 +68,7 @@ class OTPRetryView(generics.CreateAPIView):
             return Response(
                 {"message": "OTP resent successfully."}, status=status.HTTP_200_OK
             )
+        
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     permission_classes = [permissions.AllowAny]
@@ -73,13 +82,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         data = response.data
 
         # Set HttpOnly cookies
-        response.set_cookie(
-            key="access_token",
-            value=data["access"],
-            httponly=True,
-            secure=True,
-            samesite="Strict"
-        )
+       
         response.set_cookie(
             key="refresh_token",
             value=data["refresh"],
@@ -89,7 +92,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         )
 
         # Remove tokens from the response body
-        del response.data["access"]
         del response.data["refresh"]
 
         return response
@@ -101,7 +103,6 @@ class SignupView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
@@ -117,3 +118,77 @@ class SignupView(generics.CreateAPIView):
             return Response(
                 {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+
+class UploadDocumentView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        print("==== REQ001" \
+        "UEST DEBUG ====")
+        print("Content-Type:", request.META.get("CONTENT_TYPE"))
+        print("User:", request.user)
+        print("FILES:", request.FILES)
+        print("POST:", request.POST)
+        print("=======================")
+        uploaded_file = request.FILES["file"]
+        print(f"uploaded_file: {uploaded_file}")  # Debugging line
+
+        doc = UploadedFile.objects.create(
+            user=request.user,
+            file=uploaded_file,
+            original_name=uploaded_file.name,
+            size=uploaded_file.size,
+        )
+
+        # documents = load_pdf_file(doc.file.path)
+        # texts = chunk_document(documents)
+        # print(f"texta-------------{texts}")
+        # response = run_llm(texts)
+
+
+        # print(f"response-------------{response}")
+
+        # return Response(response)
+        print(f"Document uploaded with ID: {doc.id} and file path: {doc.file.url}")
+        return Response({
+            "id": doc.id,
+            "file_path": doc.file.url
+        })
+    
+class ProcessFileView(APIView):
+
+    def get(self, request, file_id):
+        print(f"Processing file with ID: {file_id} for user: {request.user}")
+        uploaded_file = get_object_or_404(UploadedFile, id=file_id, user=request.user)
+
+        documents = load_pdf_file(uploaded_file.file.path)
+        texts = chunk_document(documents)
+        response = run_llm(texts)
+        return Response(response)
+    
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request):
+        refresh = request.COOKIES.get("refresh_token")
+
+        if not refresh:
+            return Response({"detail": "No refresh token"}, status=401)
+
+        serializer = self.get_serializer(data={"refresh": refresh})
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        response = Response({"access": data["access"]})
+        response.set_cookie(
+            "refresh_token",
+            data["refresh"],
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+            path="/auth/refresh/",
+        )
+
+        return response

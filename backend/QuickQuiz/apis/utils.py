@@ -5,6 +5,25 @@ import smtplib
 import random
 import string
 from django.core.cache import cache
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
+from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import BaseModel
+
+
+class GeneratedQuiz(BaseModel):
+    question: str
+    answer: str
+    options: list[str]
+
+class ModelResponse(BaseModel):
+
+   quiz: list[GeneratedQuiz]
+
+# from langchain_core.vectorstores import InMemoryVectorStore
+# from langchain_community.embeddings import FakeEmbeddings
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,3 +75,72 @@ def send_otp(email: str) -> None:
 def generate_random_code() -> str:
     random_code = "".join(random.choices(string.ascii_letters + string.digits, k=6))
     return f"{random_code}"
+
+
+def load_pdf_file(file_path: str) -> list[Document]:
+    loader = PyPDFLoader(file_path)
+
+    docs = loader.load()
+
+    return docs
+
+
+def chunk_document(documents: list[Document]):
+    """
+    Chunks the document into smaller pieces for processing.
+    """
+    chunks = []
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+
+    for document in documents:
+        chunks.append(text_splitter.split_text(document.page_content))
+    return chunks
+
+
+def run_llm(context: list[str]):
+    
+
+    messages = [
+        (
+            "system",
+            """
+            You are a helpful assistant that can generate MCQs based quizto evaluate the student. Translate the user sentence.
+            Always provides the output in proper json format like this:
+            [
+                {{
+                    "question": "What is the capital of France?",
+                    "options": ["Berlin", "Madrid", "Paris", "Rome"],
+                    "answer": "Paris"
+                }},
+                {{
+                    "question": "Which planet is known as the Red Planet?",
+                    "options": ["Earth", "Mars", "Jupiter", "Saturn"],
+                    "answer": "Mars"
+                }}
+            ]
+            """,
+        ),
+        ("human", f"Use the following context to generate the quiz:{context}"),
+    ]
+    model = ChatGoogleGenerativeAI(
+        model="gemini-3-pro-preview",
+        api_key="",
+    )
+    structured_model = model.with_structured_output(
+        schema=ModelResponse.model_json_schema(), method="json_schema"
+    )
+
+    response = structured_model.invoke(messages)
+    print(response)
+    return response
+
+
+# def create_vector_store(docs: list[Document]):
+#     embeddings = FakeEmbeddings()
+
+#     vector_store = InMemoryVectorStore.from_documents(
+#         documents=docs,
+#         embedding=embeddings
+#     )
+
+#     return vector_store

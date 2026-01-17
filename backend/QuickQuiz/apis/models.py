@@ -52,14 +52,13 @@ class UserManager(BaseUserManager):
         return password
 
 
-class User(AbstractUser,BaseModel):
+class User(AbstractUser, BaseModel):
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
-    
+
     objects = UserManager()
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name"]  
-
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     def __str__(self):
         return self.email
@@ -102,3 +101,16 @@ class Result(BaseModel):
 
     def __str__(self):
         return f"{self.user.email} - {self.quiz.title} - {self.score}"
+
+
+def upload_to(instance, filename):
+    ext = filename.split(".")[-1]
+    return f"documents/user_{instance.user.id}/{uuid.uuid4()}.{ext}"
+
+
+class UploadedFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=upload_to)
+    original_name = models.CharField(max_length=255)
+    size = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
