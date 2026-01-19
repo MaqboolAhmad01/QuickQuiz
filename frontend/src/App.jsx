@@ -6,6 +6,7 @@ import OTPSent from "./pages/OTPSent";
 import UploadScreen from "./pages/UploadScreen";
 import Quiz from "./pages/Quiz";
 import Test from "./pages/test";
+import QuizLobby from "./pages/QuizSetup";
 
 function App() {
   return (
@@ -16,7 +17,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/upload" element={<UploadScreen />} />
+        <Route path="/quiz-Setup" element={<QuizLobby />} />
         <Route path="/test" element={<Test />} />
+
       </Routes>
     </Router>
   );
