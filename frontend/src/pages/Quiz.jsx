@@ -44,20 +44,20 @@ const Quiz = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-8">
-        <h1 className="text-4xl font-semibold text-white text-center mb-6">
+      <div className="w-full max-w-2xl bg-gradient-to-r from-[#2EBA9F] to-[#6A1B5B] rounded-xl shadow-lg p-8">
+        <h1 className="text-4xl font-semibold text-center mb-6">
           Quick Quiz
         </h1>
 
         {showScore ? (
           <div className="text-center">
-            <h2 className="text-xl text-white mb-4">
+            <h2 className="text-xl  mb-4">
               You scored <span className="font-bold">{score}</span> out of{" "}
               {data.length}
             </h2>
             <button
               onClick={resetQuiz}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500"
+              className="px-6 py-3 bg-[#6A1B5B] text-white rounded-lg "
             >
               Restart Quiz
             </button>
@@ -65,27 +65,25 @@ const Quiz = () => {
         ) : (
           <>
             {/* Progress */}
-            <p className="text-sm text-white mb-2">
+            <p className="text-sm  mb-2">
               Question {index + 1} of {data.length}
             </p>
 
-            <h2 className="text-lg  text-white font-medium mb-6">
+            <h2 className="text-lg font-medium mb-6">
               {question.question}
             </h2>
 
-            <ul className="space-y-4 text-white">
+            <ul className="space-y-4">
               {question.options.map((option, i) => {
                 let base =
-                  "w-full px-4 py-3  border rounded-lg cursor-pointer transition";
+                  "w-full px-4 py-3 border rounded-lg cursor-pointer transition";
 
                 if (selected) {
-                  if (option === question.answer) {
-                    base += " bg-green-300 text-black border-green-500";
-                  } else if (option === selected) {
-                    base += " bg-red-300 text-black border-red-500";
-                  } 
+                  if (option === selected) {
+                    base += " bg-[#6A1B5B] text-white border-green-500";
+                  }
                 } else {
-                  base += " hover:bg-gray-50 hover:text-gray-900";
+                  base += " hover:bg-[#6A1B5B] hover:text-gray-100";
                 }
 
                 return (
@@ -102,8 +100,7 @@ const Quiz = () => {
 
             <button
               onClick={nextQuestion}
-              className="mt-6 w-full py-3 bg-gray-600 text-white rounded-lg disabled:bg-gray-500"
-              disabled={!selected}
+              className="mt-6 w-full py-3 bg-[#6A1B5B] text-white rounded-lg"
             >
               Next
             </button>
