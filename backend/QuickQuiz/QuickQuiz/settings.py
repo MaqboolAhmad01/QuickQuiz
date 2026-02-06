@@ -201,3 +201,5 @@ swagger_settings = {
     "USE_SESSION_AUTH": False,   # important to disable session login
     "JSON_EDITOR": True,
 }
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
