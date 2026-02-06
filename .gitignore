@@ -1,31 +1,77 @@
-# dependencies
-quick-quiz-frontend/node_modules
-# build output
-/dist
-/build
-
-# misc
-.DS_Store
+# ======================
+# Logs
+# ======================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# local env files
-.env
-.env.local
-.env.*.local
-
-# editor settings
-.vscode/
-.idea/
-
-# lock files (optional, depending on team workflow)
-/package-lock.json
-/yarn.lock
-/pnpm-lock.yaml
+# ======================
+# Node / Frontend
+# ======================
 node_modules/
+dist/
+dist-ssr/
+*.local
 
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*$py.class
 
-# python bytecode
-*.pyc
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Python packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# Editor & OS files
+# ======================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

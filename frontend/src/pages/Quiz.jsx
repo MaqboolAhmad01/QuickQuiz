@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import Logo from "../components/logo/Logo";
 
 const Quiz = () => {
   const location = useLocation();
@@ -13,7 +12,6 @@ const Quiz = () => {
   ];
   const quiz = location.state?.quiz;
 
-  // ✅ guard against refresh / direct access
   if (!quiz || !quiz.quiz) {
     return (
       <Layout>

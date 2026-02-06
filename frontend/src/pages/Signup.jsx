@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import Logo from "../components/logo/Logo";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 // api call function
 const signupUser = async (formData) => {
-  const response = await fetch("http://localhost:8000/auth/signup/", {
+  const response = await fetch(API_BASE_URL+"auth/signup/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),

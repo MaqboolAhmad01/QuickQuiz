@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Logo from "../components/logo/Logo";
 import toast, { Toaster } from "react-hot-toast";
+import {API_BASE_URL} from "../config";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -14,7 +15,7 @@ const ResetPassword = () => {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/auth/reset-password/", {
+      const response = await fetch(API_BASE_URL+"/auth/reset-password/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -40,7 +41,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/auth/update-password/${token}/`, {
+      const response = await fetch(API_BASE_URL+`/auth/update-password/${token}/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ new_password: newPassword }),
