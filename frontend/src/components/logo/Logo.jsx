@@ -1,11 +1,17 @@
 import logo from "../../assets/logo.png"; // adjust path based on your folder
 import React from "react";
-import "./logo.css";
 
-const Logo = () => {
-    console.log(logo);
-    return (<div className="logo-container">
-        <img src={logo} alt="App Logo" className="logo" />
-    </div>)
-}
+
+const Logo = ({ width = "w-32", height = "h-32", className = " top-0 left-0" }) => {
+  return (
+    <div className={`${className}`}>
+      <img
+        src={logo}
+        alt="App Logo"
+        className={`${width} ${height}  `}
+      />
+    </div>
+  );
+};
+
 export default Logo;

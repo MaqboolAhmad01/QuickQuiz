@@ -1,10 +1,31 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
-import Logo from "../components/logo/Logo"; 
+import { useLocation, useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import Logo from "../components/logo/Logo";
 
 const Quiz = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const name = localStorage.getItem("file_name")
+  const filesList = [
+    { name: name || "Document 1" },
+   
+  ];
   const quiz = location.state?.quiz;
+
+  // ✅ guard against refresh / direct access
+  if (!quiz || !quiz.quiz) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-white text-lg">
+            Quiz data not found. Please start the quiz again.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
+
   const data = quiz.quiz;
 
   const [index, setIndex] = useState(0);
@@ -18,7 +39,6 @@ const Quiz = () => {
     if (selected) return;
 
     setSelected(option);
-
     if (option === question.answer) {
       setScore((prev) => prev + 1);
     }
@@ -30,7 +50,7 @@ const Quiz = () => {
     if (index === data.length - 1) {
       setShowScore(true);
     } else {
-      setIndex(index + 1);
+      setIndex((i) => i + 1);
       setSelected(null);
     }
   };
@@ -43,71 +63,70 @@ const Quiz = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-2xl bg-gradient-to-r from-[#2EBA9F] to-[#6A1B5B] rounded-xl shadow-lg p-8">
-        <h1 className="text-4xl font-semibold text-center mb-6">
-          Quick Quiz
-        </h1>
+    
+    <Layout files={filesList}>  
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-2xl bg-[#FFFFFFB3] rounded-xl shadow-lg p-8">
 
-        {showScore ? (
-          <div className="text-center">
-            <h2 className="text-xl  mb-4">
-              You scored <span className="font-bold">{score}</span> out of{" "}
-              {data.length}
-            </h2>
-            <button
-              onClick={resetQuiz}
-              className="px-6 py-3 bg-[#6A1B5B] text-white rounded-lg "
-            >
-              Restart Quiz
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Progress */}
-            <p className="text-sm  mb-2">
-              Question {index + 1} of {data.length}
-            </p>
+          <h1 className="text-4xl text-black font-semibold text-center mb-6">
+            Quick Quiz
+          </h1>
+          
 
-            <h2 className="text-lg font-medium mb-6">
-              {question.question}
-            </h2>
+          {showScore ? (
+            <div className="text-center">
+              <h2 className="text-xl mb-4">
+                You scored <span className="font-bold">{score}</span> out of {data.length}
+              </h2>
+              <button
+                onClick={resetQuiz}
+                className="px-6 py-3 bg-black/30 rounded-lg"
+              >
+                Restart Quiz
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm mb-2 text-black ">
+                Question {index + 1} of {data.length}
+              </p>
 
-            <ul className="space-y-4">
-              {question.options.map((option, i) => {
-                let base =
-                  "w-full px-4 py-3 border rounded-lg cursor-pointer transition";
+              <h2 className="text-lg  text-black font-medium mb-6"> 
+                {question.question}
+              </h2>
 
-                if (selected) {
-                  if (option === selected) {
-                    base += " bg-[#6A1B5B] text-white border-green-500";
-                  }
-                } else {
-                  base += " hover:bg-[#6A1B5B] hover:text-gray-100";
-                }
+              <ul className="space-y-4">
+                {question.options.map((option, i) => (
+                    <li
+                      key={i}
+                      onClick={() => handleOptionClick(option)}
+                      className={`w-full   px-4 py-3 border border-black rounded-lg cursor-pointer transition 
+                        ${
+                          selected
+                            ? option === selected   
+                              ? "bg-[#6A1B5B] text-white"
+                              : "opacity-50"
+                            : "  hover:text-white hover:bg-[#6A1B5B]"
+                        }
+                      `} 
+                    >
+                      {option}
+                    </li>
+                ))}
+              </ul>
 
-                return (
-                  <li
-                    key={i}
-                    onClick={() => handleOptionClick(option)}
-                    className={base}
-                  >
-                    {option}
-                  </li>
-                );
-              })}
-            </ul>
-
-            <button
-              onClick={nextQuestion}
-              className="mt-6 w-full py-3 bg-[#6A1B5B] text-white rounded-lg"
-            >
-              Next
-            </button>
-          </>
-        )}
+              <button
+                onClick={nextQuestion}
+                className="mt-6 w-full py-3 bg-[#6A1B5B] rounded-lg disabled:opacity-50 text-white font-medium"
+                disabled={!selected}
+              >
+                Next
+              </button>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

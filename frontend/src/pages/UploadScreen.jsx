@@ -3,6 +3,7 @@ import "./UploadScreen.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/apiClient";
+import Layout from "../components/Layout";
 
 const UploadScreen = () => {
   const [file, setFile] = useState(null);
@@ -34,22 +35,14 @@ const UploadScreen = () => {
 
       if (!uploadRes.ok) throw new Error("File upload failed");
 
-      const { id: fileId } = await uploadRes.json();
-      console.log("File uploaded with ID:", fileId);
+      const { id: fileId, name: fileName } = await uploadRes.json();
+      localStorage.setItem("file_id", fileId);
+      localStorage.setItem("file_name", fileName);
       // STEP 2: Generate Quiz
-      setUiState("generating");
+     
 
-      const quizRes = await apiFetch(`/auth/generate-quiz/${fileId}/`, {
-        method: "GET",
-      });
-
-      if (!quizRes.ok) throw new Error("Quiz generation failed");
-
-      const  quizData  = await quizRes.json();
-
-      // STEP 3: Navigate to quiz page
-      navigate(`/quiz/`,{state: {
-        quiz: quizData
+      navigate(`/quiz-setup/`,{state: {
+        file_id: fileId
       }
     });
     } catch (err) {
@@ -125,7 +118,7 @@ const UploadScreen = () => {
 
   return (
     <div className="upload-page">
-      <Logo />
+      <Layout />
       {renderActiveLayer()}
     </div>
   );

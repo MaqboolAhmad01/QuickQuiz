@@ -4,13 +4,20 @@ import logging
 import smtplib
 import random
 import string
+import hashlib
 from django.core.cache import cache
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
-from pydantic import BaseModel
+from email.mime.multipart import MIMEMultipart
 
+from pydantic import BaseModel
+import secrets
+
+
+class TopicsSchema(BaseModel):
+    topics: list[str]   # proper runtime type for validation
 
 class GeneratedQuiz(BaseModel):
     question: str
@@ -35,6 +42,7 @@ def save_otp(user_email: str, otp: str):
 def verify_otp(user_email: str, otp: str) -> bool:
     stored = cache.get(f"otp:{user_email}")
     return stored == otp
+
 
 
 EMAIL_SENDER = settings.EMAIL_SENDER
@@ -134,6 +142,35 @@ def run_llm(context: list[str]):
     print(response)
     return response
 
+def generate_topics_from_document(documents:list[str]):
+    messages = [
+        (
+            "system",
+            """
+            You are a helpful assistant that can generate topics from the given document.
+            These topics will be utilized in creating quizzes for students.
+            Always provides the output in proper json format like this:
+            {
+                "topics": ["Topic 1", "Topic 2", "Topic 3"]
+            }
+            """,
+        ),
+        ("human", f"Generate topics from the following document :{documents}"),
+    ]
+    model = ChatGoogleGenerativeAI(
+        model="gemini-3-pro-preview",
+        api_key="",
+    )
+    
+    structured_model = model.with_structured_output(
+        schema=TopicsSchema.model_json_schema(),
+        method="json_schema"
+    )
+   
+
+    response = structured_model.invoke(messages)
+    print(response)
+    return response
 
 # def create_vector_store(docs: list[Document]):
 #     embeddings = FakeEmbeddings()
@@ -144,3 +181,49 @@ def run_llm(context: list[str]):
 #     )
 
 #     return vector_store
+def build_rest_password_link(user_id: str) -> str:
+    raw_token = secrets.token_urlsafe(32)
+    reset_link = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}/"
+    hashed_token = hashlib.sha256(raw_token.encode()).hexdigest()
+    cache.set(f"reset_pwd_{raw_token}", user_id, timeout=900)  # expires in 15 minutes
+    return reset_link
+
+def send_reset_password_email(email: str, reset_link: str) -> None:
+    subject = "Password Reset Request"
+    
+    # Create a multipart message
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = EMAIL_SENDER
+    msg["To"] = email
+
+    # Plain text fallback (for email clients that don't support HTML)
+    text = f"Click the following link to reset your password: {reset_link}"
+
+    # HTML version
+    html = f"""
+    <html>
+      <body>
+        <p>Click the following link to reset your password:</p>
+        <p><a href="{reset_link}">Reset Password</a></p>
+      </body>
+    </html>
+    """
+
+    # Attach both plain text and HTML versions
+    msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+
+    try:
+        with smtplib.SMTP_SSL(host="smtp.gmail.com", port=465) as server:
+            server.login(user=EMAIL_SENDER, password=EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, email, msg.as_string())
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"Error in sending password reset email: {e}")
+
+def verify_reset_password_token(token:str)->bool:
+    hashed_token = hashlib.sha256(token.encode()).hexdigest()
+    stored_hashed_token = cache.get(f"forget_password_token:{token}")
+    if stored_hashed_token != hashed_token:
+        return False
+    return True

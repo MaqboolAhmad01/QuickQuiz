@@ -32,7 +32,7 @@ const OTPSent = () => {
         } else {
             toast.success("OTP Verified.");
             setTimeout(() => {
-                window.location.href = "/quiz";
+                window.location.href = "/login";
             }, 1000);
         }
     };

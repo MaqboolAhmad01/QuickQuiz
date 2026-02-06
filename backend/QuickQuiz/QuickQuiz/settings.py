@@ -118,6 +118,7 @@ DATABASES = {
         "PORT":  os.getenv("DB_PORT"), 
     }
 }
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 AUTH_USER_MODEL = "apis.User"
 

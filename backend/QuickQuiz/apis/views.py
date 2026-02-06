@@ -1,6 +1,6 @@
 from .models import UploadedFile, User
 from .serializers import UserSignupSerializer
-from .utils import run_llm, verify_otp,load_pdf_file,chunk_document
+from .utils import build_rest_password_link, generate_topics_from_document,verify_reset_password_token, run_llm, send_reset_password_email, verify_otp,load_pdf_file,chunk_document
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer, OTPVerificationSerializer
 from .utils import send_otp
@@ -12,7 +12,12 @@ from rest_framework import status
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 
+
 )
+from django.contrib.auth import get_user_model
+from django.core.cache import cache
+
+
 from drf_yasg.utils import swagger_auto_schema
 from django.shortcuts import get_object_or_404
 
@@ -155,7 +160,7 @@ class UploadDocumentView(APIView):
         print(f"Document uploaded with ID: {doc.id} and file path: {doc.file.url}")
         return Response({
             "id": doc.id,
-            "file_path": doc.file.url
+            "name": doc.original_name
         })
     
 class ProcessFileView(APIView):
@@ -169,6 +174,16 @@ class ProcessFileView(APIView):
         response = run_llm(texts)
         return Response(response)
     
+class GenerateTopicsView(APIView):
+    
+    def get(self, request,file_id):
+        uploaded_file = get_object_or_404(UploadedFile, id=file_id, user=request.user)
+        documents = load_pdf_file(uploaded_file.file.path)
+        texts = chunk_document(documents)
+        response = generate_topics_from_document(texts)
+        print(response)
+        return Response(response)
+
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request):
         refresh = request.COOKIES.get("refresh_token")
@@ -192,3 +207,51 @@ class CookieTokenRefreshView(TokenRefreshView):
         )
 
         return response
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response(
+                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response(
+                {"error": f"No user found with the email: {email}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        reset_link = build_rest_password_link( user.id )
+        send_reset_password_email(email=email, reset_link=reset_link)
+        return Response( status=status.HTTP_200_OK)
+
+class UpdatePasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, token):
+        User = get_user_model()
+
+    
+        new_password = request.data.get("new_password")
+
+        if not token:
+            return Response({"error": "Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not new_password:
+            return Response({"error": "New password is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # retrieve user_id from cache
+        user_id = cache.get(f"reset_pwd_{token}")
+        if not user_id:
+            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # get user and update password
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)

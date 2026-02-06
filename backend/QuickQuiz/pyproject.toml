@@ -9,8 +9,17 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "djangorestframework>=3.16.1",
     "djangorestframework-simplejwt>=5.5.1",
+    "langchain-community>=0.0.38",
+    "langchain-core>=1.2.7",
+    "langchain-google-genai>=4.2.0",
+    "langchain-text-splitters>=1.1.0",
     "dotenv>=0.9.9",
     "drf-yasg>=1.21.11",
     "psycopg2>=2.9.10",
     "pydantic>=2.12.5",
+    "dj-database-url>=2.2.0",
+    "whitenoise>=6.7.0",
+    "gunicorn>=23.0.0",
+    "uvicorn>=0.30.6",
+    "pypdf"
 ]

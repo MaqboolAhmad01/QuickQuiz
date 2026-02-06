@@ -1,129 +1,183 @@
-import { useState } from "react";
-import Logo from "../components/logo/Logo";
-
-const uploadedFilesMock = [
-  { id: 1, name: "Python Basics.pdf" },
-  { id: 2, name: "Asyncio Deep Dive.docx" },
-  { id: 3, name: "PostgreSQL Indexing.pdf" },
-];
-
-const topicsMock = ["Python", "Asyncio", "Databases", "APIs"];
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import { apiFetch } from "../api/apiClient";
 
 const QuizLobby = () => {
   const [quizType, setQuizType] = useState(null);
   const [topic, setTopic] = useState("");
+  const [topics, setTopics] = useState([]); // ✅ store fetched topics
+  const [uiState, setUiState] = useState("idle"); // idle | generating | error
+  const [errorMessage, setErrorMessage] = useState("");
 
-  return (
-    <div className="h-screen  flex overflow-hidden">
+  const navigate = useNavigate();
+  const file_id = localStorage.getItem("file_id");
 
-      {/* Side Panel */}
-      <aside className="w-80 bg-black/30 backdrop-blur-md text-white flex flex-col">
-
-        {/* Logo */}
-        <div className="py-20  ">
-          <Logo />
+  if (!file_id) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-white text-lg">
+            Quiz data not found. Please upload the file again.
+          </p>
         </div>
+      </Layout>
+    );
+  }
 
-        {/* Files */}
-        <div className="p-6 flex-1 overflow-y-auto">
-          <h2 className="text-sm uppercase tracking-wide text-white/70 mb-4">
-            Indexed Files
-          </h2>
+  // Fetch topics from API
+  const fetchTopics = async () => {
+    try {
+      const topicsRes = await apiFetch(`/auth/topics-list/${file_id}/`, { method: "GET" });
 
-          <ul className="space-y-3">
-            {uploadedFilesMock.map((file) => (
-              <li
-                key={file.id}
-                className="px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition"
-              >
-                📄 {file.name}
-              </li>
-            ))}
-          </ul>
-        </div>
+      if (!topicsRes.ok) {
+        throw new Error("Fetching topics failed");
+      }
 
-      </aside>
+      const topicsData = await topicsRes.json();
+      setTopics(topicsData.topics || []); // ✅ store in state
+    } catch (err) {
+      console.error(err);
+      // setErrorMessage(err.message || "Something went wrong");
+      // setUiState("error");
+    }
+  };
 
-      {/* Main Area */}
-      <main className="flex-1 flex items-center justify-center">
+  // Call fetchTopics once when component mounts
+  useEffect(() => {
+    fetchTopics();
+  }, []);
 
-        {/* Modal */}
-        <div className="w-full max-w-xl bg-slate-400 rounded-2xl shadow-2xl p-8">
+  const generateQuiz = async () => {
+    setUiState("generating");
 
-          <h1 className="text-3xl font-semibold text-center mb-6">
-            Choose Quiz Type
-          </h1>
+    try {
+      const quizRes = await apiFetch(`/auth/generate-quiz/${file_id}/`, { method: "GET" });
 
-          {/* Quiz Cards */}
-          <div className="space-y-4 mb-6">
+      if (!quizRes.ok) {
+        throw new Error("Quiz generation failed");
+      }
 
-            <div
-              onClick={() => {
-                setQuizType("random");
-                setTopic("");
-              }}
-              className={`p-5 border rounded-xl cursor-pointer transition ${
-                quizType === "random"
-                  ? "border-[#6A1B5B] bg-[#6A1B5B]/10"
-                  : "hover:border-gray-400"
-              }`}
-            >
-              <h3 className="text-lg font-semibold">🎲 Random Quiz</h3>
-              <p className="text-sm text-gray-600">
-                Questions from all indexed files
-              </p>
-            </div>
+      const quizData = await quizRes.json();
 
-            <div
-              onClick={() => setQuizType("topic")}
-              className={`p-5 border rounded-xl cursor-pointer transition ${
-                quizType === "topic"
-                  ? "border-[#6A1B5B] bg-[#6A1B5B]/10"
-                  : "hover:border-gray-400"
-              }`}
-            >
-              <h3 className="text-lg font-semibold">📚 Topic-Based Quiz</h3>
-              <p className="text-sm text-gray-600">
-                Focused questions by topic
-              </p>
-            </div>
+      navigate("/quiz", { state: { quiz: quizData } });
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(err.message || "Something went wrong");
+      setUiState("error");
+    }
+  };
 
+  const renderActiveLayer = () => {
+    switch (uiState) {
+      case "generating":
+        return (
+          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md text-white">
+            <div className="animate-spin h-10 w-10 border-4 border-white/30 border-t-white rounded-full mb-4" />
+            <h3 className="text-lg font-semibold">Generating Quiz…</h3>
+            <p className="text-sm opacity-80">
+              Creating intelligent questions from your document.
+            </p>
           </div>
+        );
 
-          {/* Topic Selector (natural flow, no hacks) */}
-          {quizType === "topic" && (
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">
-                Select Topic
-              </label>
-
-              <select
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg"
+      case "error":
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-xl p-6 max-w-sm text-center">
+              <h3 className="text-lg font-semibold mb-2">Error</h3>
+              <p className="text-sm mb-4">{errorMessage}</p>
+              <button
+                onClick={() => setUiState("idle")}
+                className="px-4 py-2 bg-[#6A1B5B] text-white rounded-lg"
               >
-                <option value="">-- Choose topic --</option>
-                {topicsMock.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+                Retry
+              </button>
             </div>
-          )}
+          </div>
+        );
 
-          {/* CTA */}
-          <button
-            disabled={!quizType || (quizType === "topic" && !topic)}
-            className="w-full py-3 bg-[#6A1B5B] text-white rounded-xl font-semibold disabled:opacity-50"
-          >
-            Start Quiz
-          </button>
+      default:
+        return (
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="w-full max-w-xl bg-[#FFFFFFB3] rounded-2xl shadow-2xl p-8">
 
-        </div>
-      </main>
-    </div>
-  );
+              <h1 className="text-3xl font-semibold text-center mb-6">
+                Choose Quiz Type
+              </h1>
+
+              <div className="space-y-4 mb-6">
+                <div
+                  onClick={() => {
+                    setQuizType("random");
+                    setTopic("");
+                  }}
+                  className={`p-5 border rounded-xl cursor-pointer transition ${
+                    quizType === "random"
+                      ? "border-[#6A1B5B] bg-[#6A1B5B]/10"
+                      : "hover:bg-[#6A1B5B]/10"
+                  }`}
+                >
+                  <h3 className="text-lg font-semibold">🎲 Random Quiz</h3>
+                  <p className="text-sm text-gray-600">
+                    Questions from all indexed files
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setQuizType("topic")}
+                  className={`p-5 border rounded-xl cursor-pointer transition ${
+                    quizType === "topic"
+                      ? "border-[#6A1B5B] bg-[#6A1B5B]/10"
+                      : "hover:bg-[#6A1B5B]/10"
+                  }`}
+                >
+                  <h3 className="text-lg font-semibold">📚 Topic-Based Quiz</h3>
+                  <p className="text-sm text-gray-600">
+                    Focused questions by topic
+                  </p>
+                </div>
+              </div>
+
+              {quizType === "topic" && (
+                <div className="mb-6">
+                  <label className="block mb-2 font-medium">
+                    Select Topic
+                  </label>
+
+                  <select
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    className="w-full px-4 py-3 border rounded-lg"
+                  >
+                    <option value="">-- Choose topic --</option>
+                    {topics.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <button
+                onClick={generateQuiz}
+                disabled={!quizType || (quizType === "topic" && !topic)}
+                className="w-full py-3 bg-[#6A1B5B] text-white rounded-xl font-semibold disabled:opacity-50"
+              >
+                Start Quiz
+              </button>
+            </div>
+          </div>
+        );
+    }
+  };
+const name = localStorage.getItem("file_name")
+const filesList = [
+  { name: name || "Document 1" },
+ 
+];
+  return <Layout files={filesList}>{renderActiveLayer()}</Layout>;
 };
 
 export default QuizLobby;
