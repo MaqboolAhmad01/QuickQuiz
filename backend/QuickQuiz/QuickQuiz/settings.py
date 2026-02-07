@@ -125,7 +125,7 @@ AUTH_USER_MODEL = "apis.User"
 
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
     
@@ -203,3 +203,12 @@ swagger_settings = {
 }
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Use the special SendGrid backend
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+
+# Provide your SendGrid API key from environment
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+
+# The default "From" address for emails
+DEFAULT_FROM_EMAIL = "maqbool.riazahmad@gmail.com"

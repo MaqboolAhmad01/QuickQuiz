@@ -11,6 +11,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 from email.mime.multipart import MIMEMultipart
+from django.core.mail import send_mail
 
 from pydantic import BaseModel
 import secrets
@@ -53,17 +54,25 @@ EMAIL_PASSWORD = settings.EMAIL_PASSWORD
 def _send_verification_email(email: str, otp_code: str) -> None:
     subject = "Your OTP Code"
     body = f"Your OTP code is {otp_code}."
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_SENDER
-    msg["To"] = email
-    try:
-        with smtplib.SMTP_SSL(host="smtp.gmail.com", port=465) as server:
-            server.login(user=EMAIL_SENDER, password=EMAIL_PASSWORD)
-            server.sendmail(EMAIL_SENDER, email, msg.as_string())
+    
+    send_mail(
+        subject,
+        body,
+        None,         # default from email is already set
+        [email],
+        fail_silently=False,
+    )
+    # msg = MIMEText(body)
+    # msg["Subject"] = subject
+    # msg["From"] = EMAIL_SENDER
+    # msg["To"] = email
+    # try:
+    #     with smtplib.SMTP_SSL(host="smtp.gmail.com", port=465) as server:
+    #         server.login(user=EMAIL_SENDER, password=EMAIL_PASSWORD)
+    #         server.sendmail(EMAIL_SENDER, email, msg.as_string())
 
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(msg=f"Error in sending OTP: {e}")
+    # except smtplib.SMTPAuthenticationError as e:
+    #     logger.error(msg=f"Error in sending OTP: {e}")
 
 
 def _generate_otp() -> str:
