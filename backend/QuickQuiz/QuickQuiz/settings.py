@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-cng5$o06zwaba-fy+o86p5+298gdso)5aae30=@kzz$s5mth+f
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+FRONTEND_URL = os.getenv("FRONTEND_URL") 
 
 # Application definition
 

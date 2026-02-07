@@ -14,6 +14,7 @@ from email.mime.multipart import MIMEMultipart
 
 from pydantic import BaseModel
 import secrets
+import os
 
 
 class TopicsSchema(BaseModel):
@@ -132,7 +133,7 @@ def run_llm(context: list[str]):
     ]
     model = ChatGoogleGenerativeAI(
         model="gemini-3-pro-preview",
-        api_key="",
+        api_key=os.getenv("GOOGLE_GENAI_API_KEY"),
     )
     structured_model = model.with_structured_output(
         schema=ModelResponse.model_json_schema(), method="json_schema"
@@ -159,7 +160,7 @@ def generate_topics_from_document(documents:list[str]):
     ]
     model = ChatGoogleGenerativeAI(
         model="gemini-3-pro-preview",
-        api_key="",
+        api_key=os.getenv("GOOGLE_GENAI_API_KEY"),
     )
     
     structured_model = model.with_structured_output(
@@ -169,7 +170,6 @@ def generate_topics_from_document(documents:list[str]):
    
 
     response = structured_model.invoke(messages)
-    print(response)
     return response
 
 # def create_vector_store(docs: list[Document]):

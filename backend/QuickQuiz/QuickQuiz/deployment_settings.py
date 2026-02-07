@@ -20,10 +20,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+CORS_ALLOWED_ORIGINS = [
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-# ]
+    "https://quickquiz-cquy.onrender.com",
+]
 
 STORAGES={
     "default": {
