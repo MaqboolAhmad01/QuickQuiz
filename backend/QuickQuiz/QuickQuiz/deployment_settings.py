@@ -23,7 +23,7 @@ MIDDLEWARE = [
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 CORS_ALLOWED_ORIGINS = [
 
-    "https://quickquiz-cquy.onrender.com",
+    "https://quickquiz-1-rzoq.onrender.com",
 ]
 
 STORAGES={
