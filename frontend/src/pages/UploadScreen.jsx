@@ -28,7 +28,7 @@ const UploadScreen = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const uploadRes = await apiFetch("/auth/upload/", {
+      const uploadRes = await apiFetch("auth/upload/", {
         method: "POST",
         body: formData,
       });

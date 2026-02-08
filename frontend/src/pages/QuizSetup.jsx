@@ -52,7 +52,7 @@ const QuizLobby = () => {
     setUiState("generating");
 
     try {
-      const quizRes = await apiFetch(`/auth/generate-quiz/${file_id}/`, { method: "GET" });
+      const quizRes = await apiFetch(`auth/generate-quiz/${file_id}/`, { method: "GET" });
 
       if (!quizRes.ok) {
         throw new Error("Quiz generation failed");
