@@ -212,3 +212,4 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 
 # The default "From" address for emails
 DEFAULT_FROM_EMAIL = "maqbool.riazahmad@gmail.com"
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False

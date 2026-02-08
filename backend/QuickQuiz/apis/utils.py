@@ -60,7 +60,7 @@ def _send_verification_email(email: str, otp_code: str) -> None:
         body,
         None,         # default from email is already set
         [email],
-        fail_silently=False,
+        fail_silently=True,
     )
     # msg = MIMEText(body)
     # msg["Subject"] = subject

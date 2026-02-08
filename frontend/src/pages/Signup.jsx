@@ -14,6 +14,7 @@ const signupUser = async (formData) => {
 
   if (!response.ok) {
     const err = await response.json();
+    console.error("Signup error:", err);
     throw new Error(err.message || "Signup failed");
   }
 
