@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { apiFetch } from "../api/apiClient";
+import { useNavigate } from "react-router-dom";
 
 
 import "./OTPSent.css";
@@ -9,7 +10,7 @@ import Logo from "../components/logo/Logo";
 
 const validateOTP = async (email, otp) => {
 
-    const resp = await apiFetch("/auth/verify-otp/", { method: "POST", body: { email, otp } } // send both email and OTP
+    const resp = await apiFetch("auth/verify-otp/", { method: "POST", body: { email, otp } } // send both email and OTP
     )
     console.log(resp);  
     return resp.ok
@@ -19,7 +20,9 @@ const OTPSent = () => {
 
     const location = useLocation();
     const email = location.state?.email|| localStorage.getItem("otp_email");
-    localStorage.removeItem("otp_email");            // remove it
+    localStorage.removeItem("otp_email"); 
+    const navigate = useNavigate();
+               // remove it
 
     console.log("Email from location state:", email);
 
@@ -32,9 +35,8 @@ const OTPSent = () => {
             return;
         } else {
             toast.success("OTP Verified.");
-            setTimeout(() => {
-                window.location.href = "/login";
-            }, 1000);
+            navigate("/login");
+
         }
     };
 
