@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import Logo from "../components/logo/Logo";
 import { useNavigate } from "react-router-dom";
-import {API_BASE_URL} from "../config";
+import { API_BASE_URL } from "../config";
 
 const loginUser = async (formData) => {
-  const response = await fetch(API_BASE_URL+"auth/login/", {
+  const response = await fetch(API_BASE_URL + "/auth/login/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
@@ -87,9 +87,8 @@ const Login = () => {
               />
 
               <i
-                className={`bi ${
-                  showPassword ? "bi-eye-slash" : "bi-eye"
-                } absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600`}
+                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"
+                  } absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600`}
                 onClick={() => setShowPassword(!showPassword)}
               />
             </div>
@@ -111,7 +110,7 @@ const Login = () => {
             </div>
             <div className="mt-2 text-center ">
               <a href="/reset-password" className="text-[#a01a87]">
-              Forgot password?
+                Forgot password?
               </a>
             </div>
 
