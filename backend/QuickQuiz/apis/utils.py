@@ -200,14 +200,14 @@ def build_rest_password_link(user_id: str) -> str:
 def send_reset_password_email(email: str, reset_link: str) -> None:
     subject = "Password Reset Request"
     
-    # Create a multipart message
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_SENDER
-    msg["To"] = email
+    # # Create a multipart message
+    # msg = MIMEMultipart("alternative")
+    # msg["Subject"] = subject
+    # msg["From"] = EMAIL_SENDER
+    # msg["To"] = email
 
-    # Plain text fallback (for email clients that don't support HTML)
-    text = f"Click the following link to reset your password: {reset_link}"
+    # # Plain text fallback (for email clients that don't support HTML)
+    # text = f"Click the following link to reset your password: {reset_link}"
 
     # HTML version
     html = f"""
@@ -218,17 +218,26 @@ def send_reset_password_email(email: str, reset_link: str) -> None:
       </body>
     </html>
     """
+    
+    send_mail(
+        subject,
+        message="Here is the link to reset your password.",  # fallback text
+        html_message=html,
+        from_email= None,         # default from email is already set
+        recipient_list=[email],
+        fail_silently=True,
+    )
 
-    # Attach both plain text and HTML versions
-    msg.attach(MIMEText(text, "plain"))
-    msg.attach(MIMEText(html, "html"))
+    # # Attach both plain text and HTML versions
+    # msg.attach(MIMEText(text, "plain"))
+    # msg.attach(MIMEText(html, "html"))
 
-    try:
-        with smtplib.SMTP_SSL(host="smtp.gmail.com", port=465) as server:
-            server.login(user=EMAIL_SENDER, password=EMAIL_PASSWORD)
-            server.sendmail(EMAIL_SENDER, email, msg.as_string())
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(f"Error in sending password reset email: {e}")
+    # try:
+    #     with smtplib.SMTP_SSL(host="smtp.gmail.com", port=465) as server:
+    #         server.login(user=EMAIL_SENDER, password=EMAIL_PASSWORD)
+    #         server.sendmail(EMAIL_SENDER, email, msg.as_string())
+    # except smtplib.SMTPAuthenticationError as e:
+    #     logger.error(f"Error in sending password reset email: {e}")
 
 def verify_reset_password_token(token:str)->bool:
     hashed_token = hashlib.sha256(token.encode()).hexdigest()
