@@ -11,7 +11,7 @@ import Logo from "../components/logo/Logo";
 
 const validateOTP = async (email, otp) => {
 
-    const resp = await fetch(API_BASE_URL + "auth/verify-otp/", {
+    const resp = await fetch(API_BASE_URL + "/auth/verify-otp/", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: { email, otp }
     }

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 
 const loginUser = async (formData) => {
-  const response = await fetch(API_BASE_URL + "auth/login/", {
+  const response = await fetch(API_BASE_URL + "/auth/login/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
