@@ -22,27 +22,23 @@ from drf_yasg.utils import swagger_auto_schema
 from django.shortcuts import get_object_or_404
 
 
-class OtpVerificationView(generics.CreateAPIView):
-    serializer_class = OTPVerificationSerializer
+class OtpVerificationView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request):
+        serializer = OTPVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         email = serializer.validated_data["email"]
         otp = serializer.validated_data["otp"]
 
         if verify_otp(email, otp):
             User.objects.filter(email=email).update(is_verified=True)
-            return Response(
-                {"message": "OTP verified successfully"}, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {"error": "Invalid or Expired OTP"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"message": "OTP verified successfully"})
+        return Response(
+            {"error": "Invalid or Expired OTP"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class OTPRetryView(generics.CreateAPIView):

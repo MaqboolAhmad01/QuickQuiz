@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
-import { apiFetch } from "../api/apiClient";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 
@@ -10,10 +9,14 @@ import "./OTPSent.css";
 import Logo from "../components/logo/Logo";
 
 const validateOTP = async (email, otp) => {
+    console.log("Validating OTP for email:", email, "and OTP:", otp);
 
     const resp = await fetch(API_BASE_URL + "/auth/verify-otp/", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: { email, otp }
+        body: JSON.stringify({
+            email: email,
+            otp: otp,
+        })
     }
     )
     console.log(resp);

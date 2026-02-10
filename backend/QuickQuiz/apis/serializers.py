@@ -33,10 +33,9 @@ class UserSignupSerializer(serializers.ModelSerializer):
         print(validated_data)
         user = User.objects.create_user(
             email=validated_data["email"],
-            username= validated_data["email"] ,
+            username=validated_data["email"],
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
             password=validated_data["password"],
         )
-        print("User created:", user)    
         return user
