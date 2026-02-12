@@ -13,7 +13,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Signup />} />
         <Route path="/otp-sent" element={<OTPSent />} />
         <Route path="/login" element={<Login />} />
         <Route path="/quiz" element={<Quiz />} />
