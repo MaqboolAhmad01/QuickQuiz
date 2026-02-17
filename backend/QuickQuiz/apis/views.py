@@ -1,6 +1,14 @@
 from .models import UploadedFile, User
 from .serializers import UserSignupSerializer
-from .utils import build_rest_password_link, generate_topics_from_document,verify_reset_password_token, run_llm, send_reset_password_email, verify_otp,load_pdf_file,chunk_document
+from .utils import (
+    build_rest_password_link,
+    generate_topics_from_document,
+    run_llm,
+    send_reset_password_email,
+    verify_otp,
+    load_pdf_file,
+    chunk_document,
+)
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer, OTPVerificationSerializer
 from .utils import send_otp
@@ -11,8 +19,6 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
-
-
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -70,11 +76,11 @@ class OTPRetryView(generics.CreateAPIView):
             return Response(
                 {"message": "OTP resent successfully."}, status=status.HTTP_200_OK
             )
-        
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     permission_classes = [permissions.AllowAny]
-
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -84,13 +90,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         data = response.data
 
         # Set HttpOnly cookies
-       
+
         response.set_cookie(
             key="refresh_token",
             value=data["refresh"],
             httponly=True,
             secure=True,
-            samesite="Strict"
+            samesite="Strict",
         )
 
         # Remove tokens from the response body
@@ -122,14 +128,12 @@ class SignupView(generics.CreateAPIView):
             )
 
 
-
 class UploadDocumentView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     # permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        print("==== REQ001" \
-        "UEST DEBUG ====")
+        print("==== REQ001UEST DEBUG ====")
         print("Content-Type:", request.META.get("CONTENT_TYPE"))
         print("User:", request.user)
         print("FILES:", request.FILES)
@@ -150,18 +154,14 @@ class UploadDocumentView(APIView):
         # print(f"texta-------------{texts}")
         # response = run_llm(texts)
 
-
         # print(f"response-------------{response}")
 
         # return Response(response)
         print(f"Document uploaded with ID: {doc.id} and file path: {doc.file.url}")
-        return Response({
-            "id": doc.id,
-            "name": doc.original_name
-        })
-    
-class ProcessFileView(APIView):
+        return Response({"id": doc.id, "name": doc.original_name})
 
+
+class ProcessFileView(APIView):
     def get(self, request, file_id):
         print(f"Processing file with ID: {file_id} for user: {request.user}")
         uploaded_file = get_object_or_404(UploadedFile, id=file_id, user=request.user)
@@ -170,16 +170,17 @@ class ProcessFileView(APIView):
         texts = chunk_document(documents)
         response = run_llm(texts)
         return Response(response)
-    
+
+
 class GenerateTopicsView(APIView):
-    
-    def get(self, request,file_id):
+    def get(self, request, file_id):
         uploaded_file = get_object_or_404(UploadedFile, id=file_id, user=request.user)
         documents = load_pdf_file(uploaded_file.file.path)
         texts = chunk_document(documents)
         response = generate_topics_from_document(texts)
         print(response)
         return Response(response)
+
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request):
@@ -205,6 +206,7 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         return response
 
+
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -220,9 +222,10 @@ class ResetPasswordView(APIView):
                 {"error": f"No user found with the email: {email}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        reset_link = build_rest_password_link( user.id )
+        reset_link = build_rest_password_link(user.id)
         send_reset_password_email(email=email, reset_link=reset_link)
-        return Response( status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
+
 
 class UpdatePasswordView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -230,44 +233,66 @@ class UpdatePasswordView(APIView):
     def post(self, request, token):
         User = get_user_model()
 
-    
         new_password = request.data.get("new_password")
 
         if not token:
-            return Response({"error": "Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Token is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
         if not new_password:
-            return Response({"error": "New password is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "New password is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # retrieve user_id from cache
         user_id = cache.get(f"reset_pwd_{token}")
         if not user_id:
-            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid or expired token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # get user and update password
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user.set_password(new_password)
         user.save()
-        return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
-    
+        return Response(
+            {"message": "Password updated successfully."}, status=status.HTTP_200_OK
+        )
+
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
+            # Get the refresh token from cookies
+            refresh_token = request.COOKIES.get("refresh_token")
+
+            if not refresh_token:
+                return Response(
+                    {"error": "No refresh token found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response(
-                {"message": "Logout successful"},
-                status=status.HTTP_205_RESET_CONTENT
+
+            # Optional: clear the cookie in the response
+            response = Response(
+                {"message": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT
             )
+            response.delete_cookie("refresh_token")
+            return response
+
         except Exception as e:
             return Response(
-                {"error": "Invalid token"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
             )

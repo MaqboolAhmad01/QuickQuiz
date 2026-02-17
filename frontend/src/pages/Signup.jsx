@@ -154,7 +154,7 @@ const Signup = () => {
             </div>
 
             {/* Password */}
-            <div className="relative mb-2">
+            <div className="relative mb-4">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
